@@ -1,0 +1,2257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>⚡ SAMVIIR1 · Checker Suite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --bg-primary: #0b0e14;
+            --bg-secondary: #111820;
+            --bg-card: #181f2b;
+            --bg-card-hover: #1f2838;
+            --border-color: #2a3548;
+            --text-primary: #eef2f8;
+            --text-secondary: #9aa9bb;
+            --text-muted: #6a7a8e;
+            --accent-cyan: #00d4ff;
+            --accent-green: #00e676;
+            --accent-yellow: #ffd740;
+            --accent-red: #ff5252;
+            --accent-purple: #b388ff;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 20px 40px;
+            background-image: radial-gradient(ellipse at 20% 50%, rgba(0, 212, 255, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(179, 136, 255, 0.04) 0%, transparent 50%);
+        }
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Join Overlay */
+        #joinOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            transition: opacity 0.5s ease;
+        }
+        #joinOverlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .join-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: var(--shadow);
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% {
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+            }
+            100% {
+                box-shadow: 0 0 40px rgba(0, 212, 255, 0.25);
+            }
+        }
+        .join-box .icon-big {
+            font-size: 64px;
+            color: var(--accent-cyan);
+            margin-bottom: 16px;
+        }
+        .join-box h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .join-box p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .join-box .btn-join {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, var(--accent-cyan), #0091ea);
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+        .join-box .btn-join:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+        }
+
+        /* Main Layout */
+        .container {
+            max-width: 1440px;
+            width: 100%;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .header-left .logo {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+        }
+        .header-left .logo-sub {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            padding: 4px 14px;
+            border-radius: 40px;
+            border: 1px solid var(--border-color);
+            -webkit-text-fill-color: var(--text-secondary);
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .header-right .badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-right .badge i {
+            color: var(--accent-green);
+        }
+        .header-right .social a {
+            color: var(--text-secondary);
+            font-size: 18px;
+            transition: var(--transition);
+            background: var(--bg-card);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+        }
+        .header-right .social a:hover {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        .back-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .back-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        /* Stats */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            border: 1px solid var(--border-color);
+        }
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .stat-item .num {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-primary);
+            min-width: 28px;
+        }
+        .stat-item .num.green {
+            color: var(--accent-green);
+        }
+        .stat-item .num.yellow {
+            color: var(--accent-yellow);
+        }
+        .stat-item .num.red {
+            color: var(--accent-red);
+        }
+        .stat-item .num.cyan {
+            color: var(--accent-cyan);
+        }
+        .stat-item i {
+            opacity: 0.7;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 24px 16px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        .service-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+        }
+        .service-card .icon-wrap {
+            font-size: 40px;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+        }
+        .service-card .svc-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .service-card .svc-type {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+        .service-card .version-tags {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+        }
+        .service-card .version-tag {
+            font-size: 9px;
+            font-weight: 600;
+            background: var(--bg-primary);
+            color: var(--accent-cyan);
+            padding: 2px 8px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            letter-spacing: 0.3px;
+        }
+
+        /* Service Detail View */
+        #serviceView {
+            animation: fadeSlide 0.3s ease;
+        }
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .detail-header .svc-title {
+            font-size: 28px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .detail-header .svc-title i {
+            color: var(--accent-cyan);
+        }
+        .detail-header .svc-title .version-selector {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            padding: 6px 14px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+        .detail-header .svc-title .version-selector:focus {
+            border-color: var(--accent-cyan);
+        }
+        .detail-header .svc-title .version-selector option {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 15px;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+        .tab-btn.active {
+            background: var(--bg-card);
+            color: var(--accent-cyan);
+            border: 1px solid var(--border-color);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeSlide 0.25s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Single Card */
+        .single-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            max-width: 600px;
+        }
+        .single-card .form-group {
+            margin-bottom: 16px;
+        }
+        .single-card .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .single-card .form-group input,
+        .single-card .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: var(--transition);
+        }
+        .single-card .form-group input:focus,
+        .single-card .form-group textarea:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+        .single-card .btn-run {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--accent-cyan), #0091ea);
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .single-card .btn-run:hover {
+            transform: scale(1.01);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.25);
+        }
+        .single-card .btn-run:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result-box {
+            margin-top: 16px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text-secondary);
+            font-family: 'Inter', monospace;
+            display: none;
+        }
+        .result-box.show {
+            display: block;
+        }
+        .result-box .hit {
+            color: var(--accent-green);
+        }
+        .result-box .free {
+            color: var(--accent-yellow);
+        }
+        .result-box .bad {
+            color: var(--accent-red);
+        }
+        .result-box .info {
+            color: var(--accent-cyan);
+        }
+        .result-box .muted {
+            color: var(--text-muted);
+        }
+
+        /* Bulk Section */
+        .bulk-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+        }
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 30px;
+            text-align: center;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+        .upload-area:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 212, 255, 0.03);
+        }
+        .upload-area i {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
+            color: var(--accent-cyan);
+        }
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        .bulk-preview-box {
+            margin-top: 12px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            max-height: 180px;
+            overflow-y: auto;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-family: 'Inter', monospace;
+            color: var(--text-secondary);
+            display: none;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .bulk-preview-box.show {
+            display: block;
+        }
+        .bulk-preview-box .preview-line {
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .controls .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), #0091ea);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.25);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-success {
+            background: var(--accent-green);
+            color: #000;
+        }
+        .btn-danger {
+            background: var(--accent-red);
+            color: #fff;
+        }
+        .btn-warning {
+            background: var(--accent-yellow);
+            color: #000;
+        }
+        .bulk-progress {
+            margin-top: 16px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 13px;
+            font-family: 'Inter', monospace;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+        .bulk-progress.show {
+            display: block;
+        }
+        .bulk-progress .line {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .bulk-progress .line .hit {
+            color: var(--accent-green);
+        }
+        .bulk-progress .line .free {
+            color: var(--accent-yellow);
+        }
+        .bulk-progress .line .bad {
+            color: var(--accent-red);
+        }
+        .bulk-progress .line .retry {
+            color: var(--accent-cyan);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 14px 22px;
+            box-shadow: var(--shadow);
+            font-size: 14px;
+            color: var(--text-primary);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            gap: 14px;
+            max-width: 380px;
+            animation: slideUp 0.35s ease;
+            border-left: 4px solid var(--accent-cyan);
+        }
+        .toast.show {
+            display: flex;
+        }
+        .toast.success {
+            border-left-color: var(--accent-green);
+        }
+        .toast.error {
+            border-left-color: var(--accent-red);
+        }
+        .toast .close-toast {
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding: 20px 0 10px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .footer .admin-link {
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 11px;
+            opacity: 0.4;
+            transition: var(--transition);
+            background: transparent;
+            border: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .footer .admin-link:hover {
+            opacity: 0.8;
+            color: var(--accent-cyan);
+        }
+
+        /* Admin Login Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 30px 28px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: var(--shadow);
+        }
+        .modal-box h2 {
+            margin-bottom: 16px;
+            font-size: 22px;
+        }
+        .modal-box .form-group {
+            margin-bottom: 14px;
+        }
+        .modal-box .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .modal-box .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+        }
+        .modal-box .form-group input:focus {
+            border-color: var(--accent-cyan);
+        }
+        .modal-box .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--accent-cyan), #0091ea);
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .modal-box .btn-submit:hover {
+            transform: scale(1.01);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.25);
+        }
+
+        /* Admin Panel - New Design */
+        #adminPanel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 10001;
+            overflow-y: auto;
+            padding: 30px 20px;
+        }
+        #adminPanel.show {
+            display: block;
+        }
+        #adminPanel .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        #adminPanel .admin-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+        }
+        #adminPanel .admin-header .close-admin {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        #adminPanel .admin-header .close-admin:hover {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        /* Admin Checker List - Clean Cards */
+        .admin-checker-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .admin-checker-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .admin-checker-card:hover {
+            border-color: var(--accent-cyan);
+        }
+        .admin-checker-card .card-head {
+            padding: 14px 18px;
+            background: var(--bg-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .admin-checker-card .card-head .name-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .admin-checker-card .card-head .name-area i {
+            color: var(--accent-cyan);
+        }
+        .admin-checker-card .card-head .badge-type {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 3px 12px;
+            border-radius: 40px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+        .admin-checker-card .card-head .badge-type.account {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+        .admin-checker-card .card-head .badge-type.cookie {
+            color: var(--accent-yellow);
+            border-color: var(--accent-yellow);
+        }
+        .admin-checker-card .card-body-admin {
+            padding: 16px 18px 18px;
+            display: none;
+        }
+        .admin-checker-card .card-body-admin.open {
+            display: block;
+        }
+
+        .admin-checker-card .card-body-admin .edit-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .admin-checker-card .card-body-admin .edit-row .field {
+            flex: 1 1 130px;
+        }
+        .admin-checker-card .card-body-admin .edit-row .field label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .admin-checker-card .card-body-admin .edit-row .field input,
+        .admin-checker-card .card-body-admin .edit-row .field select,
+        .admin-checker-card .card-body-admin .edit-row .field textarea {
+            width: 100%;
+            padding: 5px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+        .admin-checker-card .card-body-admin .edit-row .field textarea {
+            height: 50px;
+            resize: vertical;
+        }
+        .admin-checker-card .card-body-admin .edit-row .field input:focus,
+        .admin-checker-card .card-body-admin .edit-row .field select:focus,
+        .admin-checker-card .card-body-admin .edit-row .field textarea:focus {
+            border-color: var(--accent-cyan);
+        }
+        .admin-checker-card .card-body-admin .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .admin-checker-card .card-body-admin .actions .btn-sm {
+            padding: 4px 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Version section inside admin card */
+        .admin-versions {
+            margin-top: 14px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+        .admin-versions .ver-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .admin-versions .ver-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .admin-versions .ver-list .ver-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 3px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .admin-versions .ver-list .ver-item .vname {
+            color: var(--accent-cyan);
+        }
+        .admin-versions .ver-list .ver-item .vcode-preview {
+            color: var(--text-muted);
+            font-size: 10px;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .admin-versions .ver-list .ver-item .del-ver {
+            cursor: pointer;
+            color: var(--accent-red);
+            font-weight: 700;
+            margin-left: 2px;
+        }
+        .admin-versions .add-ver-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+        .admin-versions .add-ver-area input[type="text"] {
+            padding: 4px 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 12px;
+            flex: 1 1 100px;
+            outline: none;
+        }
+        .admin-versions .add-ver-area input[type="text"]:focus {
+            border-color: var(--accent-cyan);
+        }
+        .admin-versions .add-ver-area .file-label {
+            padding: 4px 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+        .admin-versions .add-ver-area .file-label:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+        .admin-versions .add-ver-area .file-label input[type="file"] {
+            display: none;
+        }
+        .admin-versions .add-ver-area .file-name {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .admin-versions .add-ver-area .btn-sm {
+            padding: 4px 16px;
+        }
+
+        /* Add new checker section */
+        .admin-add-new {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .admin-add-new h3 {
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        .admin-add-new .add-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .admin-add-new .add-row .field {
+            flex: 1 1 140px;
+        }
+        .admin-add-new .add-row .field label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .admin-add-new .add-row .field input,
+        .admin-add-new .add-row .field select,
+        .admin-add-new .add-row .field textarea {
+            width: 100%;
+            padding: 5px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+        .admin-add-new .add-row .field textarea {
+            height: 50px;
+            resize: vertical;
+        }
+        .admin-add-new .add-row .btn-sm {
+            padding: 6px 20px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            .dashboard-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .single-card {
+                max-width: 100%;
+            }
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .admin-checker-list {
+                grid-template-columns: 1fr;
+            }
+            .admin-add-new .add-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .admin-add-new .add-row .btn-sm {
+                margin-top: 4px;
+            }
+            .admin-checker-card .card-body-admin .edit-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .admin-versions .add-ver-area {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .detail-header .svc-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- JOIN OVERLAY -->
+    <div id="joinOverlay">
+        <div class="join-box">
+            <div class="icon-big"><i class="fab fa-telegram-plane"></i></div>
+            <h2>🔒 Join to Access</h2>
+            <p>You must join our Telegram channel before using this tool.<br />Click the button below, join, then come back.</p>
+            <a href="https://t.me/+lHuA2u0-ruxhNjBl" target="_blank" class="btn-join" id="joinBtn">
+                <i class="fab fa-telegram"></i> Join Channel
+            </a>
+            <p style="margin-top:16px;font-size:12px;color:var(--text-muted);">After joining, click the button again.</p>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container" id="mainContainer" style="display:none;">
+
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <span class="logo" id="homeBtn">⚡ SAMVIIR1</span>
+                <span class="logo-sub">Checker Suite</span>
+            </div>
+            <div class="header-right">
+                <span class="badge"><i class="fas fa-circle"></i> <span id="serviceCount">0</span> Services</span>
+                <div class="social">
+                    <a href="https://t.me/+lHuA2u0-ruxhNjBl" target="_blank"><i class="fab fa-telegram-plane"></i></a>
+                    <a href="https://t.me/+lHuA2u0-ruxhNjBl" target="_blank"><i class="fas fa-link"></i></a>
+                </div>
+            </div>
+        </header>
+
+        <!-- STATS -->
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-item"><i class="fas fa-check-circle" style="color:var(--accent-green);"></i> <span class="num green" id="statHits">0</span> Hits</div>
+            <div class="stat-item"><i class="fas fa-star" style="color:var(--accent-yellow);"></i> <span class="num yellow" id="statFree">0</span> Free</div>
+            <div class="stat-item"><i class="fas fa-times-circle" style="color:var(--accent-red);"></i> <span class="num red" id="statBad">0</span> Bad</div>
+            <div class="stat-item"><i class="fas fa-sync-alt" style="color:var(--accent-cyan);"></i> <span class="num cyan" id="statChecked">0</span> Checked</div>
+            <div class="stat-item"><i class="fas fa-clock" style="color:var(--text-muted);"></i> <span class="num" id="statTime" style="color:var(--text-secondary);">00:00</span></div>
+        </div>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="dashboardView">
+            <div class="dashboard-grid" id="serviceGrid"></div>
+        </div>
+
+        <!-- SERVICE DETAIL VIEW -->
+        <div id="serviceView" class="hidden">
+            <div class="detail-header">
+                <button class="back-btn" id="backToDash"><i class="fas fa-arrow-left"></i> Back</button>
+                <span class="svc-title" id="svcTitle">
+                    <i class="fas fa-cube"></i> <span id="svcNameDisplay">Service</span>
+                    <select class="version-selector" id="versionSelector"></select>
+                </span>
+            </div>
+            <div class="tabs" id="serviceTabs">
+                <button class="tab-btn active" data-tab="single">Single Check</button>
+                <button class="tab-btn" data-tab="bulk">Bulk Check</button>
+            </div>
+            <!-- Single Tab -->
+            <div class="tab-content active" id="tab-single">
+                <div class="single-card" id="singleCard"></div>
+            </div>
+            <!-- Bulk Tab -->
+            <div class="tab-content" id="tab-bulk">
+                <div class="bulk-section" id="bulkSection">
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <div>Drop files here or click to browse</div>
+                        <div class="file-info" id="uploadFileInfo">Supported: .txt (email:pass) / .zip (cookies)</div>
+                        <input type="file" id="fileInput" multiple accept=".txt,.zip" />
+                    </div>
+                    <div class="bulk-preview-box" id="bulkPreview"></div>
+                    <div class="controls">
+                        <button class="btn btn-primary" id="bulkStartBtn"><i class="fas fa-play"></i> Start Bulk Check</button>
+                        <button class="btn btn-success" id="bulkDownloadBtn" disabled><i class="fas fa-download"></i> Download Hits</button>
+                        <button class="btn btn-danger" id="bulkClearBtn"><i class="fas fa-trash-alt"></i> Clear</button>
+                        <span style="color:var(--text-muted);font-size:13px;" id="bulkInfo">Loaded: 0 entries</span>
+                    </div>
+                    <div class="bulk-progress" id="bulkProgress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <span>Built by <a href="https://t.me/+lHuA2u0-ruxhNjBl" target="_blank">@SAMVIIR1</a> &bull; All checkers integrated &bull; 2026</span>
+            <br />
+            <button class="admin-link" id="adminLink">admin</button>
+        </footer>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+        <span id="toastMsg">Done</span>
+        <span class="close-toast" id="toastClose">&times;</span>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div class="modal-overlay" id="adminLoginModal">
+        <div class="modal-box">
+            <h2>🔐 Admin Login</h2>
+            <div class="form-group">
+                <label>ID</label>
+                <input type="text" id="adminId" placeholder="Enter admin ID" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="adminPass" placeholder="Enter password" />
+            </div>
+            <button class="btn-submit" id="adminLoginBtn">Login</button>
+            <p style="margin-top:12px;color:var(--text-muted);font-size:13px;" id="adminLoginError"></p>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="adminPanel">
+        <div class="admin-header">
+            <h1>⚙️ Admin Panel</h1>
+            <button class="close-admin" id="closeAdminPanel">✕ Close</button>
+        </div>
+        <div class="admin-checker-list" id="adminCheckerList"></div>
+        <div class="admin-add-new">
+            <h3>➕ Add New Checker</h3>
+            <div class="add-row">
+                <div class="field">
+                    <label>ID (unique)</label>
+                    <input type="text" id="newId" placeholder="e.g. netflix" />
+                </div>
+                <div class="field">
+                    <label>Name</label>
+                    <input type="text" id="newName" placeholder="Netflix" />
+                </div>
+                <div class="field">
+                    <label>Icon (FontAwesome)</label>
+                    <input type="text" id="newIcon" placeholder="fas fa-film" value="fas fa-cube" />
+                </div>
+                <div class="field">
+                    <label>Type</label>
+                    <select id="newType"><option value="account">Account</option><option value="cookie">Cookie</option></select>
+                </div>
+                <div class="field" style="flex:2;">
+                    <label>Python Code</label>
+                    <textarea id="newCode" placeholder="Paste your Python checker code here..."></textarea>
+                </div>
+                <button class="btn-sm btn-success" id="addCheckerBtn">Add Checker</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        //  JOIN GATE
+        // ================================================================
+        const overlay = document.getElementById('joinOverlay');
+        const mainContainer = document.getElementById('mainContainer');
+        const joinBtn = document.getElementById('joinBtn');
+
+        if (sessionStorage.getItem('joined') === 'true') {
+            overlay.classList.add('hidden');
+            mainContainer.style.display = 'block';
+        }
+
+        joinBtn.addEventListener('click', function(e) {
+            sessionStorage.setItem('joined', 'true');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                mainContainer.style.display = 'block';
+                showToast('✅ Welcome!', 'success');
+                renderDashboard();
+            }, 1200);
+        });
+
+        // ================================================================
+        //  DEFAULT CHECKERS (with versions as objects)
+        // ================================================================
+        const DEFAULT_CHECKERS = [
+            { id: 'steam', name: 'Steam', icon: 'fab fa-steam', type: 'account', code: '# Steam checker code',
+                versions: [{ version: 'v1.0', code: '# Steam v1.0' }, { version: 'v2.1', code: '# Steam v2.1' }] },
+            { id: 'tod', name: 'TOD.TV', icon: 'fas fa-tv', type: 'account', code: '# TOD.TV checker',
+                versions: [{ version: 'v1.0', code: '# TOD v1.0' }] },
+            { id: 'crunchyroll', name: 'Crunchyroll', icon: 'fas fa-play-circle', type: 'account', code: '# Crunchyroll',
+                versions: [{ version: 'v2.0', code: '# CR v2.0' }] },
+            { id: 'expressvpn', name: 'ExpressVPN', icon: 'fas fa-shield-virus', type: 'account', code: '# ExpressVPN',
+                versions: [{ version: 'v1.2', code: '# EVPN v1.2' }] },
+            { id: 'deezer', name: 'Deezer', icon: 'fas fa-music', type: 'account', code: '# Deezer',
+                versions: [{ version: 'v1.0', code: '# Deezer v1.0' }] },
+            { id: 'primevideo', name: 'Prime Video', icon: 'fas fa-film', type: 'cookie', code: '# Prime Video',
+                versions: [{ version: 'v2.0', code: '# PV v2.0' }] },
+            { id: 'cursor', name: 'Cursor', icon: 'fas fa-code', type: 'cookie', code: '# Cursor',
+                versions: [{ version: 'v1.5', code: '# Cursor v1.5' }] },
+            { id: 'chatgpt', name: 'ChatGPT', icon: 'fas fa-brain', type: 'cookie', code: '# ChatGPT',
+                versions: [{ version: 'v1.0', code: '# ChatGPT v1.0' }, { version: 'v2.0', code: '# ChatGPT v2.0' }] },
+            { id: 'dazn', name: 'DAZN', icon: 'fas fa-futbol', type: 'account', code: '# DAZN',
+                versions: [{ version: 'v1.1', code: '# DAZN v1.1' }] },
+            { id: 'disney', name: 'Disney+', icon: 'fas fa-magic', type: 'account', code: '# Disney+',
+                versions: [{ version: 'v1.0', code: '# Disney v1.0' }] }
+        ];
+
+        // ================================================================
+        //  STATE & HELPERS
+        // ================================================================
+        let checkers = [];
+        let currentServiceId = null;
+        let currentSelectedVersion = null;
+        let bulkEntries = [];
+        let bulkResults = [];
+        let bulkDone = false;
+        let isRunning = false;
+
+        const state = {
+            hits: 0,
+            free: 0,
+            bad: 0,
+            checked: 0,
+            startTime: Date.now(),
+        };
+
+        // DOM refs
+        const $ = s => document.querySelector(s);
+        const $$ = s => document.querySelectorAll(s);
+
+        const statHits = $('#statHits'),
+            statFree = $('#statFree'),
+            statBad = $('#statBad'),
+            statChecked = $('#statChecked'),
+            statTime = $('#statTime');
+        const toast = $('#toast'),
+            toastMsg = $('#toastMsg'),
+            toastClose = $('#toastClose');
+        const dashboardView = $('#dashboardView');
+        const serviceView = $('#serviceView');
+        const serviceGrid = $('#serviceGrid');
+        const svcNameDisplay = $('#svcNameDisplay');
+        const versionSelector = $('#versionSelector');
+        const singleCard = $('#singleCard');
+        const backBtn = $('#backToDash');
+        const homeBtn = $('#homeBtn');
+        const uploadArea = $('#uploadArea');
+        const fileInput = $('#fileInput');
+        const bulkStartBtn = $('#bulkStartBtn');
+        const bulkDownloadBtn = $('#bulkDownloadBtn');
+        const bulkClearBtn = $('#bulkClearBtn');
+        const bulkInfo = $('#bulkInfo');
+        const bulkProgress = $('#bulkProgress');
+        const bulkPreview = $('#bulkPreview');
+        const uploadFileInfo = $('#uploadFileInfo');
+        const serviceCount = $('#serviceCount');
+
+        // Admin
+        const adminLink = $('#adminLink');
+        const adminLoginModal = $('#adminLoginModal');
+        const adminId = $('#adminId');
+        const adminPass = $('#adminPass');
+        const adminLoginBtn = $('#adminLoginBtn');
+        const adminLoginError = $('#adminLoginError');
+        const adminPanel = $('#adminPanel');
+        const closeAdminPanel = $('#closeAdminPanel');
+        const adminCheckerList = $('#adminCheckerList');
+        const newId = $('#newId');
+        const newName = $('#newName');
+        const newIcon = $('#newIcon');
+        const newType = $('#newType');
+        const newCode = $('#newCode');
+        const addCheckerBtn = $('#addCheckerBtn');
+
+        // ================================================================
+        //  UTILITY
+        // ================================================================
+        function fmtTime(ms) {
+            const s = Math.floor(ms / 1000);
+            const m = String(Math.floor(s / 60)).padStart(2, '0');
+            const sec = String(s % 60).padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        function updateStats() {
+            statHits.textContent = state.hits;
+            statFree.textContent = state.free;
+            statBad.textContent = state.bad;
+            statChecked.textContent = state.checked;
+            statTime.textContent = fmtTime(Date.now() - state.startTime);
+        }
+
+        function showToast(msg, type = 'info') {
+            toast.className = 'toast show';
+            if (type === 'success') toast.classList.add('success');
+            else if (type === 'error') toast.classList.add('error');
+            toastMsg.textContent = msg;
+            clearTimeout(toast._hide);
+            toast._hide = setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+        toastClose.onclick = () => toast.classList.remove('show');
+
+        // ================================================================
+        //  PERSISTENCE
+        // ================================================================
+        function loadCheckers() {
+            const stored = localStorage.getItem('sam_checkers');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    checkers = parsed.map(c => ({ ...c, versions: c.versions || [] }));
+                } catch (e) {
+                    checkers = JSON.parse(JSON.stringify(DEFAULT_CHECKERS));
+                }
+            } else {
+                checkers = JSON.parse(JSON.stringify(DEFAULT_CHECKERS));
+            }
+            saveCheckers();
+        }
+
+        function saveCheckers() {
+            localStorage.setItem('sam_checkers', JSON.stringify(checkers));
+            updateServiceCount();
+        }
+
+        function updateServiceCount() {
+            serviceCount.textContent = checkers.length;
+        }
+
+        // ================================================================
+        //  RENDER DASHBOARD
+        // ================================================================
+        function renderDashboard() {
+            serviceGrid.innerHTML = '';
+            checkers.forEach(svc => {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                const isAccount = svc.type === 'account';
+                const iconColor = isAccount ? '#00e676' : '#ffd740';
+                let versionsHtml = '';
+                if (svc.versions && svc.versions.length) {
+                    const verNames = svc.versions.map(v => v.version);
+                    versionsHtml = `<div class="version-tags">${verNames.map(v => `<span class="version-tag">${v}</span>`).join('')}</div>`;
+                }
+                card.innerHTML = `
+                    <div class="icon-wrap" style="color:${iconColor}"><i class="${svc.icon}"></i></div>
+                    <div class="svc-name">${svc.name}</div>
+                    <div class="svc-type">${isAccount ? '👤 Account' : '🍪 Cookie'}</div>
+                    ${versionsHtml}
+                `;
+                card.addEventListener('click', () => openService(svc.id));
+                serviceGrid.appendChild(card);
+            });
+            updateServiceCount();
+        }
+
+        // ================================================================
+        //  OPEN SERVICE with Version Selector
+        // ================================================================
+        let currentServiceMeta = null;
+
+        function openService(id) {
+            currentServiceMeta = checkers.find(s => s.id === id);
+            if (!currentServiceMeta) return;
+            currentServiceId = id;
+
+            // Set default version to first one or null
+            const versions = currentServiceMeta.versions || [];
+            currentSelectedVersion = versions.length > 0 ? versions[0].version : null;
+
+            bulkEntries = [];
+            bulkResults = [];
+            bulkDone = false;
+            bulkDownloadBtn.disabled = true;
+            bulkProgress.classList.remove('show');
+            bulkProgress.innerHTML = '';
+            bulkPreview.classList.remove('show');
+            bulkPreview.textContent = '';
+            bulkInfo.textContent = 'Loaded: 0 entries';
+            fileInput.value = '';
+
+            dashboardView.classList.add('hidden');
+            serviceView.classList.remove('hidden');
+
+            const isAccount = currentServiceMeta.type === 'account';
+            svcNameDisplay.textContent = currentServiceMeta.name;
+            uploadFileInfo.textContent = isAccount ? 'Supported: .txt (email:pass)' :
+                'Supported: .txt, .zip (cookie content)';
+
+            // Build version selector
+            buildVersionSelector();
+
+            // Build form
+            buildSingleForm(currentServiceMeta, currentSelectedVersion);
+
+            // Reset tabs
+            document.querySelectorAll('#serviceTabs .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('#serviceTabs .tab-btn[data-tab="single"]').classList.add('active');
+            document.getElementById('tab-single').classList.add('active');
+            document.getElementById('tab-bulk').classList.remove('active');
+
+            bulkStartBtn.disabled = false;
+            bulkStartBtn.innerHTML = `<i class="fas fa-play"></i> Start Bulk Check`;
+        }
+
+        // ================================================================
+        //  BUILD VERSION SELECTOR
+        // ================================================================
+        function buildVersionSelector() {
+            versionSelector.innerHTML = '';
+            const versions = currentServiceMeta.versions || [];
+            if (versions.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'No versions';
+                versionSelector.appendChild(opt);
+                return;
+            }
+            versions.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.version;
+                opt.textContent = v.version;
+                if (v.version === currentSelectedVersion) opt.selected = true;
+                versionSelector.appendChild(opt);
+            });
+
+            // On change, rebuild the form with selected version
+            versionSelector.onchange = function() {
+                currentSelectedVersion = this.value;
+                buildSingleForm(currentServiceMeta, currentSelectedVersion);
+                showToast(`Switched to ${currentSelectedVersion}`, 'info');
+            };
+        }
+
+        // ================================================================
+        //  SINGLE FORM (with version info)
+        // ================================================================
+        function buildSingleForm(svc, selectedVer) {
+            singleCard.innerHTML = '';
+            const fields = getFieldsForService(svc.id);
+            const form = document.createElement('div');
+
+            // Show which version is being used
+            const verInfo = document.createElement('div');
+            verInfo.style.cssText =
+                'font-size:12px;color:var(--text-muted);margin-bottom:14px;padding:8px 12px;background:var(--bg-primary);border-radius:var(--radius-sm);border:1px solid var(--border-color);';
+            const verObj = svc.versions.find(v => v.version === selectedVer);
+            const codePreview = verObj ? (verObj.code || '').substring(0, 60) + (verObj && verObj.code && verObj.code
+                .length > 60 ? '...' : '') : 'No code';
+            verInfo.innerHTML = `<i class="fas fa-code"></i> Version: <strong style="color:var(--accent-cyan);">${selectedVer || 'None'}</strong> &nbsp;|&nbsp; Code: <span style="color:var(--text-secondary);">${codePreview}</span>`;
+            form.appendChild(verInfo);
+
+            fields.forEach(f => {
+                const group = document.createElement('div');
+                group.className = 'form-group';
+                const label = document.createElement('label');
+                label.textContent = f.label;
+                group.appendChild(label);
+                let input;
+                if (f.type === 'textarea') {
+                    input = document.createElement('textarea');
+                    input.rows = 2;
+                } else {
+                    input = document.createElement('input');
+                    input.type = f.type || 'text';
+                }
+                input.placeholder = f.placeholder || '';
+                input.dataset.key = f.key;
+                input.className = 'field-input';
+                group.appendChild(input);
+                form.appendChild(group);
+            });
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-run';
+            btn.innerHTML = `<i class="fas fa-play"></i> Check ${svc.name} (${selectedVer || 'default'})`;
+            btn.id = 'singleRunBtn';
+            form.appendChild(btn);
+
+            const resultBox = document.createElement('div');
+            resultBox.className = 'result-box';
+            resultBox.id = 'singleResult';
+            form.appendChild(resultBox);
+
+            singleCard.appendChild(form);
+
+            btn.onclick = () => runSingleCheck(svc.id, selectedVer);
+        }
+
+        function getFieldsForService(id) {
+            const svc = checkers.find(s => s.id === id);
+            if (!svc) return [{ key: 'input', label: 'Input', placeholder: 'Enter value', type: 'text' }];
+            if (svc.type === 'account') {
+                return [
+                    { key: 'email', label: 'Email', placeholder: 'user@example.com' },
+                    { key: 'password', label: 'Password', placeholder: '••••••••', type: 'password' }
+                ];
+            } else {
+                return [
+                    { key: 'cookie', label: 'Cookie (Netscape)', placeholder: 'paste cookie content...', type: 'textarea' }
+                ];
+            }
+        }
+
+        // ================================================================
+        //  SINGLE CHECK (with version)
+        // ================================================================
+        async function runSingleCheck(id, version) {
+            const btn = document.getElementById('singleRunBtn');
+            const resultBox = document.getElementById('singleResult');
+            if (!btn || !resultBox) return;
+
+            const inputs = singleCard.querySelectorAll('.field-input');
+            const data = {};
+            inputs.forEach(inp => { data[inp.dataset.key] = inp.value.trim(); });
+
+            if (Object.values(data).every(v => !v)) {
+                showToast('Please fill in the fields.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Checking...`;
+            resultBox.className = 'result-box show';
+            resultBox.textContent = `⏳ Connecting with ${version || 'default'}...`;
+
+            try {
+                const res = await mockCheck(id, data, version);
+                displaySingleResult(resultBox, res, version);
+                updateStatsFromResult(res);
+            } catch (err) {
+                resultBox.innerHTML = `<span class="bad">✗ Error: ${err.message}</span>`;
+                showToast(`Error: ${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-play"></i> Check ${currentServiceMeta.name} (${version || 'default'})`;
+                updateStats();
+            }
+        }
+
+        function displaySingleResult(el, res, version) {
+            const { status, extra, data } = res;
+            let html = '';
+            const iconMap = { 'HIT': '✅', 'FREE': '🆓', 'BAD': '❌', 'BAN': '🚫', '2FA': '🔐', 'RATE': '⏳', 'EXPIRED': '⌛',
+                'INVALID': '🚫', 'RETRY': '🔄', 'ERROR': '⚠️' };
+            const clsMap = { 'HIT': 'hit', 'FREE': 'free', 'BAD': 'bad', 'BAN': 'bad', '2FA': 'info', 'RATE': 'info',
+                'EXPIRED': 'free', 'INVALID': 'bad', 'RETRY': 'info', 'ERROR': 'bad' };
+            const icon = iconMap[status] || '📌';
+            const cls = clsMap[status] || 'muted';
+            html += `<span class="${cls}">${icon} ${status}</span>`;
+            html += ` <span class="muted" style="font-size:11px;">(${version || 'default'})</span>`;
+            if (status === 'HIT' || status === 'FREE' || status === '2FA') {
+                html += '\n';
+                for (const [k, v] of Object.entries(extra)) {
+                    if (v !== undefined && v !== null && v !== '') {
+                        html += `\n<span class="muted">${k}:</span> <span class="${cls}">${v}</span>`;
+                    }
+                }
+                const inputs = Object.entries(data).filter(([k, v]) => v).map(([k, v]) => `${k}: ${v}`).join(' | ');
+                if (inputs) html += `\n<span class="muted">input:</span> ${inputs}`;
+            } else {
+                html += `\n<span class="muted">${extra?.info || 'No additional info'}</span>`;
+            }
+            html += `\n<span class="muted" style="font-size:11px;">CHKEBY @SAMVIIR1 CHKR JOIN https://t.me/+lHuA2u0-ruxhNjBl</span>`;
+            el.innerHTML = html;
+            el.style.display = 'block';
+        }
+
+        // ================================================================
+        //  MOCK CHECK (with version)
+        // ================================================================
+        function mockCheck(id, data, version) {
+            return new Promise((resolve, reject) => {
+                const delay = 600 + Math.random() * 1000;
+                setTimeout(() => {
+                    if (Math.random() < 0.08) { reject(new Error('Service error')); return; }
+                    const statuses = ['HIT', 'FREE', 'BAD', 'RETRY', '2FA', 'BAN'];
+                    const weights = [0.18, 0.25, 0.32, 0.1, 0.05, 0.1];
+                    let rand = Math.random(),
+                        cum = 0,
+                        chosen = 'BAD';
+                    for (let i = 0; i < statuses.length; i++) { cum += weights[i]; if (rand <= cum) { chosen = statuses[i];
+                            break; } }
+                    let extra = {};
+                    if (chosen === 'HIT') {
+                        extra = { plan: ['Standard', 'Premium', 'Ultimate', 'Pro'][Math.floor(Math.random() * 4)],
+                            expiry: '2026-0' + (1 + Math.floor(Math.random() * 9)) + '-' + String(10 + Math.floor(Math
+                                .random() * 20)).padStart(2, '0'), country: ['US', 'GB', 'DE', 'FR', 'CA'][Math.floor(
+                                Math.random() * 5)] };
+                    } else if (chosen === 'FREE') {
+                        extra = { plan: 'Free' };
+                    } else if (chosen === '2FA') {
+                        extra = { types: '2,3,4' };
+                    }
+                    resolve({ status: chosen, extra, id, data, version });
+                }, delay);
+            });
+        }
+
+        // ================================================================
+        //  UPDATE STATS
+        // ================================================================
+        function updateStatsFromResult(res) {
+            state.checked++;
+            if (res.status === 'HIT') state.hits++;
+            else if (res.status === 'FREE' || res.status === 'EXPIRED') state.free++;
+            else if (res.status === 'BAD' || res.status === 'BAN' || res.status === 'INVALID') state.bad++;
+            updateStats();
+        }
+
+        // ================================================================
+        //  BULK CHECKER (same as before but with version)
+        // ================================================================
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleBulkFiles);
+
+        async function handleBulkFiles(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+
+            const isAccount = currentServiceMeta.type === 'account';
+            bulkEntries = [];
+            bulkResults = [];
+            bulkDone = false;
+            bulkDownloadBtn.disabled = true;
+            bulkProgress.classList.remove('show');
+            bulkProgress.innerHTML = '';
+            bulkPreview.classList.remove('show');
+            bulkPreview.textContent = '';
+
+            let totalEntries = 0;
+            let previewLines = [];
+
+            for (const file of files) {
+                const name = file.name;
+                let text = '';
+
+                if (name.endsWith('.zip')) {
+                    if (isAccount) {
+                        showToast('ZIP not supported for account checkers. Use .txt.', 'error');
+                        continue;
+                    }
+                    try {
+                        const zip = await JSZip.loadAsync(file);
+                        const txtFiles = Object.keys(zip.files).filter(f => f.endsWith('.txt'));
+                        for (const fname of txtFiles) {
+                            const content = await zip.files[fname].async('string');
+                            text += content + '\n';
+                        }
+                    } catch (err) {
+                        showToast('Failed to read ZIP: ' + err.message, 'error');
+                        continue;
+                    }
+                } else if (name.endsWith('.txt')) {
+                    text = await file.text();
+                } else {
+                    showToast('Unsupported file type: ' + name, 'error');
+                    continue;
+                }
+
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+                for (const line of lines) {
+                    if (isAccount) {
+                        if (line.includes(':')) {
+                            bulkEntries.push({ type: 'account', content: line });
+                            previewLines.push(line);
+                            totalEntries++;
+                        }
+                    } else {
+                        bulkEntries.push({ type: 'cookie', content: line });
+                        totalEntries++;
+                    }
+                }
+            }
+
+            bulkInfo.textContent = `Loaded: ${totalEntries} entries`;
+
+            if (isAccount && previewLines.length > 0) {
+                bulkPreview.innerHTML = previewLines.slice(0, 50).map(l =>
+                    `<div class="preview-line">${l}</div>`
+                ).join('');
+                if (previewLines.length > 50) bulkPreview.innerHTML +=
+                    `<div class="preview-line muted">... and ${previewLines.length - 50} more</div>`;
+                bulkPreview.classList.add('show');
+            } else if (!isAccount && totalEntries > 0) {
+                bulkPreview.innerHTML =
+                    `<div class="muted">🍪 Cookie entries loaded (${totalEntries}). Content hidden for security.</div>`;
+                bulkPreview.classList.add('show');
+            } else {
+                bulkPreview.classList.remove('show');
+            }
+
+            if (totalEntries === 0) showToast('No valid entries found.', 'error');
+            else showToast(`Loaded ${totalEntries} entries.`, 'success');
+            fileInput.value = '';
+        }
+
+        bulkStartBtn.addEventListener('click', async () => {
+            if (bulkEntries.length === 0) {
+                showToast('No entries loaded. Upload a file first.', 'error');
+                return;
+            }
+            if (bulkStartBtn.disabled || isRunning) return;
+            isRunning = true;
+            bulkStartBtn.disabled = true;
+            bulkStartBtn.innerHTML = `<span class="spinner"></span> Checking...`;
+            bulkResults = [];
+            bulkDone = false;
+            bulkDownloadBtn.disabled = true;
+            bulkProgress.classList.add('show');
+            bulkProgress.innerHTML = '';
+
+            const total = bulkEntries.length;
+            let index = 0;
+            const ver = currentSelectedVersion || 'default';
+
+            for (const entry of bulkEntries) {
+                index++;
+                const progressLine = document.createElement('div');
+                progressLine.className = 'line';
+                progressLine.textContent = `[${index}/${total}] ${ver} Checking: ${entry.content.substring(0, 40)}...`;
+                bulkProgress.appendChild(progressLine);
+
+                let res;
+                try {
+                    res = await mockCheck('bulk', { data: entry.content }, ver);
+                } catch (err) {
+                    res = { status: 'ERROR', extra: { info: err.message }, id: 'bulk', data: { data: entry.content },
+                    version: ver };
+                }
+                const lineText = `${entry.content} | ${res.status}`;
+                const extraInfo = res.extra ? Object.entries(res.extra).map(([k, v]) => `${k}:${v}`).join(' ') : '';
+                const fullLine = `${lineText} ${extraInfo}`;
+                const cls = res.status === 'HIT' ? 'hit' : res.status === 'FREE' ? 'free' : res.status === 'BAD' ? 'bad' :
+                    'retry';
+                const resultLine = document.createElement('div');
+                resultLine.className = 'line';
+                resultLine.innerHTML = `<span class="${cls}">[${index}/${total}] ${ver} ${fullLine}</span>`;
+                bulkProgress.appendChild(resultLine);
+                bulkProgress.scrollTop = bulkProgress.scrollHeight;
+
+                bulkResults.push({ entry, status: res.status, extra: res.extra, line: fullLine, version: ver });
+
+                state.checked++;
+                if (res.status === 'HIT') state.hits++;
+                else if (res.status === 'FREE' || res.status === 'EXPIRED') state.free++;
+                else if (res.status === 'BAD' || res.status === 'BAN' || res.status === 'INVALID') state.bad++;
+                updateStats();
+
+                await new Promise(r => setTimeout(r, 250 + Math.random() * 350));
+            }
+
+            bulkDone = true;
+            bulkDownloadBtn.disabled = false;
+            bulkStartBtn.disabled = false;
+            isRunning = false;
+            bulkStartBtn.innerHTML = `<i class="fas fa-play"></i> Start Bulk Check`;
+            showToast(`Bulk check complete. ${state.hits} hits.`, 'success');
+        });
+
+        bulkDownloadBtn.addEventListener('click', () => {
+            if (!bulkDone || bulkResults.length === 0) return;
+            let hitLines = [];
+            let counter = 1;
+            for (const res of bulkResults) {
+                if (res.status === 'HIT') {
+                    hitLines.push(
+                        `#,HIT${counter} ---- ${res.line} | ${res.version || 'default'} | CHKEBY @SAMVIIR1 CHKR JOIN https://t.me/+lHuA2u0-ruxhNjBl`
+                        );
+                    counter++;
+                }
+            }
+            if (hitLines.length === 0) {
+                showToast('No hits to download.', 'error');
+                return;
+            }
+            const blob = new Blob([hitLines.join('\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hits_${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`Downloaded ${hitLines.length} hits.`, 'success');
+        });
+
+        bulkClearBtn.addEventListener('click', () => {
+            bulkEntries = [];
+            bulkResults = [];
+            bulkDone = false;
+            bulkDownloadBtn.disabled = true;
+            bulkProgress.classList.remove('show');
+            bulkProgress.innerHTML = '';
+            bulkPreview.classList.remove('show');
+            bulkPreview.innerHTML = '';
+            bulkInfo.textContent = 'Loaded: 0 entries';
+            fileInput.value = '';
+            showToast('Cleared.', 'info');
+        });
+
+        // ================================================================
+        //  TABS (Service Detail)
+        // ================================================================
+        document.querySelectorAll('#serviceTabs .tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#serviceTabs .tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                document.getElementById('tab-single').classList.toggle('active', tab === 'single');
+                document.getElementById('tab-bulk').classList.toggle('active', tab === 'bulk');
+            });
+        });
+
+        // ================================================================
+        //  NAVIGATION
+        // ================================================================
+        function goHome() {
+            dashboardView.classList.remove('hidden');
+            serviceView.classList.add('hidden');
+            currentServiceId = null;
+            currentSelectedVersion = null;
+            bulkEntries = [];
+            bulkResults = [];
+            bulkDone = false;
+            bulkDownloadBtn.disabled = true;
+            bulkProgress.classList.remove('show');
+            bulkProgress.innerHTML = '';
+            bulkPreview.classList.remove('show');
+            bulkPreview.innerHTML = '';
+            bulkInfo.textContent = 'Loaded: 0 entries';
+            fileInput.value = '';
+            document.querySelectorAll('#serviceTabs .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('#serviceTabs .tab-btn[data-tab="single"]').classList.add('active');
+            document.getElementById('tab-single').classList.add('active');
+            document.getElementById('tab-bulk').classList.remove('active');
+            renderDashboard();
+        }
+
+        backBtn.addEventListener('click', goHome);
+        homeBtn.addEventListener('click', goHome);
+
+        // ================================================================
+        //  ADMIN PANEL - Redesigned with collapsible cards
+        // ================================================================
+        adminLink.addEventListener('click', () => {
+            adminLoginModal.classList.add('show');
+            adminLoginError.textContent = '';
+            adminId.value = '';
+            adminPass.value = '';
+            adminId.focus();
+        });
+
+        adminLoginBtn.addEventListener('click', () => {
+            const id = adminId.value.trim();
+            const pass = adminPass.value.trim();
+            if (id === 'samarth8584' && pass === 'samvirtg9981') {
+                adminLoginModal.classList.remove('show');
+                openAdminPanel();
+            } else {
+                adminLoginError.textContent = '❌ Invalid credentials.';
+            }
+        });
+
+        adminId.addEventListener('keydown', (e) => { if (e.key === 'Enter') adminLoginBtn.click(); });
+        adminPass.addEventListener('keydown', (e) => { if (e.key === 'Enter') adminLoginBtn.click(); });
+
+        function openAdminPanel() {
+            adminPanel.classList.add('show');
+            renderAdminList();
+        }
+
+        function closeAdminPanelFn() {
+            adminPanel.classList.remove('show');
+        }
+        closeAdminPanel.addEventListener('click', closeAdminPanelFn);
+
+        // ================================================================
+        //  RENDER ADMIN LIST - Clean card design
+        // ================================================================
+        function renderAdminList() {
+            adminCheckerList.innerHTML = '';
+            checkers.forEach((svc, idx) => {
+                const card = document.createElement('div');
+                card.className = 'admin-checker-card';
+                const isAccount = svc.type === 'account';
+                const typeLabel = isAccount ? 'Account' : 'Cookie';
+                const typeCls = isAccount ? 'account' : 'cookie';
+
+                card.innerHTML = `
+                    <div class="card-head" data-idx="${idx}">
+                        <div class="name-area">
+                            <i class="${svc.icon}"></i>
+                            ${svc.name}
+                            <span style="font-weight:400;font-size:12px;color:var(--text-muted);">(${svc.id})</span>
+                        </div>
+                        <span class="badge-type ${typeCls}">${typeLabel}</span>
+                        <span style="color:var(--text-muted);font-size:12px;margin-left:8px;">${svc.versions ? svc.versions.length : 0} versions</span>
+                    </div>
+                    <div class="card-body-admin" data-idx="${idx}">
+                        <div class="edit-row">
+                            <div class="field"><label>ID</label><input type="text" class="edit-id" value="${svc.id}" /></div>
+                            <div class="field"><label>Name</label><input type="text" class="edit-name" value="${svc.name}" /></div>
+                            <div class="field"><label>Icon</label><input type="text" class="edit-icon" value="${svc.icon}" /></div>
+                            <div class="field"><label>Type</label>
+                                <select class="edit-type">
+                                    <option value="account" ${svc.type==='account'?'selected':''}>Account</option>
+                                    <option value="cookie" ${svc.type==='cookie'?'selected':''}>Cookie</option>
+                                </select>
+                            </div>
+                            <div class="field" style="flex:2;"><label>Python Code</label><textarea class="edit-code">${svc.code || ''}</textarea></div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-sm btn-success save-checker" data-idx="${idx}">💾 Save</button>
+                            <button class="btn-sm btn-danger delete-checker" data-idx="${idx}">🗑 Delete</button>
+                        </div>
+
+                        <div class="admin-versions">
+                            <div class="ver-title">📦 Versions</div>
+                            <div class="ver-list" id="verlist-${idx}">
+                                ${svc.versions && svc.versions.length ? svc.versions.map((v, vi) => `
+                                    <span class="ver-item">
+                                        <span class="vname">${v.version}</span>
+                                        <span class="vcode-preview" title="${v.code || ''}">${(v.code || '').substring(0, 30)}${(v.code||'').length>30?'...':''}</span>
+                                        <span class="del-ver" data-idx="${idx}" data-ver="${v.version}">✕</span>
+                                    </span>
+                                `).join('') : '<span style="color:var(--text-muted);font-size:12px;">No versions</span>'}
+                            </div>
+                            <div class="add-ver-area">
+                                <input type="text" class="new-ver-input" placeholder="Version name (e.g. v2.0)" data-idx="${idx}" />
+                                <label class="file-label" data-idx="${idx}">📄 Upload .py <input type="file" class="ver-file-input" accept=".py,.txt" data-idx="${idx}" /></label>
+                                <span class="file-name" id="verFileName-${idx}">No file</span>
+                                <button class="btn-sm btn-primary add-ver-btn" data-idx="${idx}">+ Add</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                adminCheckerList.appendChild(card);
+
+                // Toggle card body
+                const head = card.querySelector('.card-head');
+                const body = card.querySelector('.card-body-admin');
+                head.addEventListener('click', function(e) {
+                    if (e.target.closest('.del-ver') || e.target.closest('.save-checker') || e.target.closest(
+                            '.delete-checker') || e.target.closest('.add-ver-btn')) return;
+                    body.classList.toggle('open');
+                });
+
+                // File input display
+                const fileInputVer = card.querySelector('.ver-file-input');
+                const fileNameSpan = card.querySelector('.file-name');
+                fileInputVer.addEventListener('change', function() {
+                    fileNameSpan.textContent = this.files && this.files.length > 0 ? this.files[0].name :
+                        'No file';
+                });
+            });
+
+            // ---- Event listeners ----
+            // Save checker
+            document.querySelectorAll('.save-checker').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.idx);
+                    const card = this.closest('.admin-checker-card');
+                    const id = card.querySelector('.edit-id').value.trim();
+                    const name = card.querySelector('.edit-name').value.trim();
+                    const icon = card.querySelector('.edit-icon').value.trim();
+                    const type = card.querySelector('.edit-type').value;
+                    const code = card.querySelector('.edit-code').value;
+                    if (!id || !name) { showToast('ID and Name required.', 'error'); return; }
+                    const existing = checkers.find((c, i) => c.id === id && i !== idx);
+                    if (existing) { showToast('ID already exists.', 'error'); return; }
+                    checkers[idx].id = id;
+                    checkers[idx].name = name;
+                    checkers[idx].icon = icon || 'fas fa-cube';
+                    checkers[idx].type = type;
+                    checkers[idx].code = code;
+                    saveCheckers();
+                    renderAdminList();
+                    renderDashboard();
+                    showToast('Checker updated.', 'success');
+                });
+            });
+
+            // Delete checker
+            document.querySelectorAll('.delete-checker').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.idx);
+                    if (confirm(`Delete "${checkers[idx].name}"?`)) {
+                        checkers.splice(idx, 1);
+                        saveCheckers();
+                        renderAdminList();
+                        renderDashboard();
+                        showToast('Checker deleted.', 'info');
+                    }
+                });
+            });
+
+            // Delete version
+            document.querySelectorAll('.del-ver').forEach(el => {
+                el.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const idx = parseInt(this.dataset.idx);
+                    const ver = this.dataset.ver;
+                    if (confirm(`Remove version "${ver}"?`)) {
+                        const svc = checkers[idx];
+                        svc.versions = svc.versions.filter(v => v.version !== ver);
+                        saveCheckers();
+                        renderAdminList();
+                        renderDashboard();
+                        showToast(`Version "${ver}" removed.`, 'info');
+                    }
+                });
+            });
+
+            // Add version
+            document.querySelectorAll('.add-ver-btn').forEach(btn => {
+                btn.addEventListener('click', async function(e) {
+                    e.stopPropagation();
+                    const idx = parseInt(this.dataset.idx);
+                    const card = this.closest('.admin-checker-card');
+                    const input = card.querySelector('.new-ver-input');
+                    const fileInput = card.querySelector('.ver-file-input');
+                    const verName = input.value.trim();
+                    if (!verName) { showToast('Enter version name.', 'error'); return; }
+                    const svc = checkers[idx];
+                    if (svc.versions.find(v => v.version === verName)) {
+                        showToast('Version already exists.', 'error');
+                        return;
+                    }
+                    let fileContent = '';
+                    if (fileInput.files && fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        try {
+                            fileContent = await file.text();
+                        } catch (e) {
+                            showToast('Failed to read file: ' + e.message, 'error');
+                            return;
+                        }
+                    } else {
+                        fileContent = `# ${verName} code (no file uploaded)`;
+                    }
+                    svc.versions.push({ version: verName, code: fileContent });
+                    saveCheckers();
+                    renderAdminList();
+                    renderDashboard();
+                    showToast(`Version "${verName}" added.`, 'success');
+                    input.value = '';
+                    card.querySelector('.file-name').textContent = 'No file';
+                    fileInput.value = '';
+                });
+            });
+
+            // Enter key on version input
+            document.querySelectorAll('.new-ver-input').forEach(inp => {
+                inp.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        const btn = this.closest('.add-ver-area').querySelector('.add-ver-btn');
+                        if (btn) btn.click();
+                    }
+                });
+            });
+        }
+
+        // ================================================================
+        //  ADD NEW CHECKER
+        // ================================================================
+        addCheckerBtn.addEventListener('click', () => {
+            const id = newId.value.trim();
+            const name = newName.value.trim();
+            const icon = newIcon.value.trim() || 'fas fa-cube';
+            const type = newType.value;
+            const code = newCode.value;
+            if (!id || !name) { showToast('ID and Name required.', 'error'); return; }
+            if (checkers.find(c => c.id === id)) { showToast('ID already exists.', 'error'); return; }
+            checkers.push({ id, name, icon, type, code, versions: [] });
+            saveCheckers();
+            renderAdminList();
+            renderDashboard();
+            showToast(`Checker "${name}" added.`, 'success');
+            newId.value = '';
+            newName.value = '';
+            newIcon.value = 'fas fa-cube';
+            newCode.value = '';
+        });
+
+        // ================================================================
+        //  INIT
+        // ================================================================
+        loadCheckers();
+        renderDashboard();
+        updateStats();
+        showToast('🚀 Dashboard ready — click a service to start.', 'success');
+
+        console.log('%c🔥 SAMVIIR1 Checker Suite loaded', 'font-size:20px;font-weight:bold;color:#00d4ff;');
+        console.log('%c📦 Version selector added to each service.', 'font-size:14px;color:#9aa9bb;');
+        console.log('%c🔐 Admin: click "admin" in footer, login with your credentials.', 'font-size:14px;color:#9aa9bb;');
+    </script>
+</body>
+</html>
